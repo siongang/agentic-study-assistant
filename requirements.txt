@@ -1,0 +1,29 @@
+# requirements.txt
+
+# --- Agent framework ---
+google-adk
+
+# --- LLM / embeddings (local + Google-compatible) ---
+google-generativeai
+
+# --- PDF parsing ---
+pymupdf
+pdfplumber
+
+# --- Text chunking / token counting ---
+tiktoken
+
+# --- Vector database (local RAG) ---
+chromadb
+faiss-cpu
+
+# --- Data models / validation ---
+pydantic
+
+# --- Terminal UX / utilities ---
+python-dotenv
+tqdm
+numpy
+
+# --- Optional (nice-to-have, still local) ---
+rich        # prettier terminal chat output
