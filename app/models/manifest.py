@@ -15,6 +15,9 @@ class ManifestFile(BaseModel):
     status: Literal["new", "processed", "stale", "error"] = "new"
     derived: list[str] = Field(default_factory=list)  # derived artifact paths
     error: str | None = None  # optional error message for status="error"
+    # Phase 3: classification metadata
+    doc_confidence: float | None = None  # 0.0-1.0 confidence score
+    doc_reasoning: str | None = None  # LLM reasoning for classification
 
 
 class Manifest(BaseModel):

@@ -9,12 +9,14 @@
       "sha256": "19d231588bda809120be8ca18de82ef64108952345f5d838d0eacfaf47074ef3",
       "size_bytes": 122807,
       "modified_time": 1770420502.252066,
-      "doc_type": "unknown",
+      "doc_type": "exam_overview",
       "status": "processed",
       "derived": [
         "state/extracted_text/7c98e30d-a2c8-4ca5-959b-144397f37ac9.json"
       ],
-      "error": null
+      "error": null,
+      "doc_confidence": 1.0,
+      "doc_reasoning": "The document is explicitly titled 'Midterm Examination 1: Overview' and lists the date, chapters covered, and detailed topics within those chapters that will be on the exam. This perfectly matches the definition of an exam_overview."
     },
     {
       "file_id": "b1c4dae3-e4d4-479e-97e4-efe34532b9f0",
@@ -23,12 +25,14 @@
       "sha256": "a9e83b82795380bdf51f58dbfcec72f40baf97baf4e483adc0c734b8df509069",
       "size_bytes": 135463,
       "modified_time": 1770420784.4966831,
-      "doc_type": "unknown",
+      "doc_type": "syllabus",
       "status": "processed",
       "derived": [
         "state/extracted_text/b1c4dae3-e4d4-479e-97e4-efe34532b9f0.json"
       ],
-      "error": null
+      "error": null,
+      "doc_confidence": 1.0,
+      "doc_reasoning": "The document is explicitly titled 'Course Outline' and includes a course description, a list of topics to be covered, and a detailed weekly schedule with dates, topics, and assignment deadlines. The filename also contains 'Syllabus'."
     },
     {
       "file_id": "803570a2-592f-4cda-9aab-60e05f861faa",
@@ -37,12 +41,14 @@
       "sha256": "5e2116fba83913866b7dc450dc8e137a6a0f1634a03b95131c7d15761b6a458d",
       "size_bytes": 36237299,
       "modified_time": 1770420480.6111603,
-      "doc_type": "unknown",
+      "doc_type": "textbook",
       "status": "processed",
       "derived": [
         "state/extracted_text/803570a2-592f-4cda-9aab-60e05f861faa.json"
       ],
-      "error": null
+      "error": null,
+      "doc_confidence": 1.0,
+      "doc_reasoning": "The filename clearly indicates a published textbook with authors, title, edition, and publisher. The content includes a title page with authors and affiliations, a dedication, and descriptions of pedagogical features and supplementary online resources (MyStatLab, StatTalk Videos) commonly found in textbooks."
     }
   ]
 }
