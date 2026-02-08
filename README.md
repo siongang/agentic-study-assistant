@@ -9,12 +9,12 @@
 
 An **agentic study planning system** that:
 
-- Ingests large textbooks (PDFs) and extracts structured knowledge
+- Ingests large textbooks (PDFs), syllabus, and midterm information, and extracts structured knowledge
 - Guarantees **100% topic coverage** before exams
 - Generates day-by-day study plans with workload balancing
 - Acts as a **grounded AI tutor** using RAG
 - Automatically **re-ingests and replans** when textbooks change
-- Runs **entirely locally** through a terminal chat interface
+- An interactive, dynamic, and intelligent system
 
 Built using **multi-agent architecture** with Google's Agent Development Kit (ADK) principles.
 
@@ -40,18 +40,12 @@ cp .env.example .env
 # Edit .env with your API key
 ```
 
-### 2. Add textbooks
-
-```bash
-# Place your PDF textbooks here
-cp ~/Downloads/physics.pdf data/uploads/
-cp ~/Downloads/biology.pdf data/uploads/
-```
+### 2. Add required materials (textbooks, midterm information, syllabus)
 
 ### 3. Run the agent
 
 ```bash
-python -m app.main
+adk web
 ```
 
 ### 4. Example conversation
@@ -82,61 +76,10 @@ Plan saved to data/plans/study_plan.md
 └──────┬──────┘
        ├─→ IngestionAgent  (PDF → topics + chunks + embeddings)
        ├─→ PlannerAgent    (topics → study plan)
-       ├─→ VerifierAgent   (coverage + constraint checks)
        └─→ TutorAgent      (RAG-based Q&A)
 ```
 
-### Key Principles
 
-1. **Structure before RAG**
-   - Extract topic inventory first
-   - Use RAG only for tutoring, not planning
-
-2. **Guaranteed coverage**
-   - Every topic tracked from extraction → scheduling
-   - Verification loop ensures no gaps
-
-3. **Automatic invalidation**
-   - Textbook changes trigger re-ingestion
-   - Plans automatically marked stale
-
-4. **Deterministic + LLM hybrid**
-   - Tools handle deterministic work (chunking, scheduling)
-   - Agents handle reasoning (when to ingest, how to route)
-
----
-
-## Project Structure
-
-```
-study_agent/
-├── app/
-│   ├── main.py              # Terminal chat loop (entry point)
-│   ├── state.py             # Material registry + session state
-│   ├── agents/              # Agent implementations
-│   │   ├── root_agent.py    # Intent detection + routing
-│   │   ├── ingestion_agent.py
-│   │   ├── planner_agent.py
-│   │   ├── verifier_agent.py
-│   │   └── tutor_agent.py
-│   ├── tools/               # Deterministic tools
-│   │   ├── ingest/          # PDF parsing, topic extraction
-│   │   ├── rag/             # Embeddings, vector store
-│   │   └── planning/        # Scheduling, coverage checks
-│   └── schemas/             # Pydantic data models
-├── data/
-│   ├── uploads/             # Place PDFs here
-│   ├── topics/              # Extracted topic inventories
-│   ├── chunks/              # Text chunks with metadata
-│   ├── indexes/             # Vector store persistence
-│   └── plans/               # Generated study plans
-├── docs/
-│   ├── ARCHITECTURE.md      # Detailed design
-│   ├── SETUP.md             # Installation guide
-│   └── USAGE.md             # User guide
-├── requirements.txt
-└── .env.example
-```
 
 ---
 
@@ -183,6 +126,11 @@ study_agent/
 ✅ **Observability** — structured logs, clear state transitions
 
 ---
+## Areas for Improvement
+- Caching repeated llm requests. f.e generating questions
+- Parallelizing Agents and long runnning tool calls
+- Better and more consistent Rag System
+
 
 ## Example Use Cases
 
@@ -231,12 +179,7 @@ study_agent/
 - Easier to demonstrate for take-home assessments
 - Clear boundary: everything is an artifact on disk
 
-### Why CLI instead of UI?
 
-- **Cleaner demonstration** of agent behavior
-- Focus on logic, not presentation
-- Easier to show state transitions
-- Professional terminal UX with `rich` library
 
 ### Why topic inventory before RAG?
 
@@ -246,7 +189,7 @@ study_agent/
 
 ### Why multi-agent instead of single agent?
 
-- **Clearer separation of concerns** (routing, ingestion, planning, verification, tutoring)
+- **Clearer separation of concerns** (routing, ingestion, planning, tutoring)
 - **Easier to test** and extend
 - **Matches industry patterns** (per Google's ADK guide)
 
@@ -261,34 +204,6 @@ study_agent/
 
 ---
 
-## Development Status
-
-**Phase 1: Foundation** ✅
-- [x] Project structure
-- [x] Dependencies setup
-- [x] Documentation
-
-**Phase 2: Core Tools** 🚧
-- [ ] PDF parser
-- [ ] Topic extractor
-- [ ] Chunker
-- [ ] Embedder
-- [ ] Vector store
-
-**Phase 3: Agents** 🚧
-- [ ] RootAgent (routing)
-- [ ] IngestionAgent
-- [ ] PlannerAgent
-- [ ] VerifierAgent
-- [ ] TutorAgent
-
-**Phase 4: Integration** 📋
-- [ ] Terminal chat interface
-- [ ] State management
-- [ ] End-to-end testing
-
----
-
 ## Requirements
 
 - Python 3.12+
@@ -296,10 +211,6 @@ study_agent/
 - Google API key (for Gemini models)
 
 ---
-
-## License
-
-MIT License — see [LICENSE](LICENSE) for details.
 
 ---
 
