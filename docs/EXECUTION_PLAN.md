@@ -410,21 +410,16 @@ Current chunking.py already implements page-aware chunking.
 Task:
 1. Verify that page numbers in chunks are 1-indexed and accurate
 2. Load textbook TOC metadata (if available) to tag chunks with chapter numbers
-3. Add section_type detection to chunk metadata using simple heuristics
+3. ~~Add section_type detection~~ (DEPRECATED: section_type detection was unreliable and removed)
 
-Chunk metadata fields to add:
-- section_type (one of: "explanation", "problems", "summary", "other")
+Chunk metadata fields:
+- section_type: always set to "other" (not used, kept for schema compatibility)
 - chapter_number (integer, optional - from TOC mapping)
 - chapter_title (string, optional - from TOC mapping)
 
 Detection rules (deterministic, NO LLM):
 
-A) section_type detection:
-- If chunk contains keywords: "Problem", "Exercise", "Practice", "Question" → mark as "problems"
-- If chunk contains: "Summary", "Key Points", "Review", "Conclusion" → mark as "summary"
-- Default: "explanation"
-
-B) chapter_number detection:
+A) chapter_number detection:
 - Load textbook_metadata/{file_id}.json (if exists)
 - For each chunk, check if page_start falls within any chapter's page range
 - If page_start is between chapter.page_start and chapter.page_end:
@@ -443,7 +438,7 @@ Implementation:
 - Update app/tools/chunking.py:
   * Load TOC metadata at start of chunking process
   * For each chunk, look up chapter based on page_start
-  * Detect section_type using keywords
+  * Set section_type to "other" (not used)
   * Store all metadata with chunk
 
 - Store chunks in `storage/state/chunks/chunks.jsonl` (one JSON per line)
@@ -467,11 +462,9 @@ should print:
 - Sterman - Business Dynamics.pdf
   * 542 chunks created
   * Chapter breakdown: Ch1: 45, Ch2: 38, Ch3: 52, ... (if TOC available)
-  * Section breakdown: explanation: 480, problems: 45, summary: 17
 - Triola - Biostatistics.pdf
   * 678 chunks created
   * No TOC metadata (chunking proceeded without chapter tags)
-  * Section breakdown: explanation: 610, problems: 55, summary: 13
 
 Also support single file:
 `python -m app.cli.chunk_textbook --file-id {file_id}`
@@ -627,7 +620,7 @@ def enrich_coverage(
 
 Logic details:
 
-A) Chapter-aware filtering (NEW - leverages Phase 4.5 TOC):
+A) Chapter-aware filtering (leverages Phase 4.5 TOC):
 - Each topic bullet has a chapter number (from coverage JSON)
 - Query FAISS with bullet text + filter: chapter_number == topic.chapter
 - This dramatically improves precision by eliminating chunks from other chapters
@@ -644,7 +637,7 @@ B) Page range consolidation:
 - Merge consecutive pages (within 3 pages): [[137, 139], [155, 156], [202, 203]]
 
 C) Practice problem extraction:
-- Filter chunks with section_type="problems"
+- Search all retrieved chunks (section_type not used)
 - Use regex to find patterns:
   * "Problem \d+\.?\d*"
   * "Exercise \d+"
@@ -1196,9 +1189,27 @@ Each prompt:
 
 ---
 
+## Implementation Notes
+
+**Section Type Detection (Deprecated):**
+- Phase 5 originally included section_type detection ("explanation", "problems", "summary")
+- This was found to be unreliable and not worth the complexity
+- All chunks are now marked as section_type="other"
+- RAG Scout and other tools do not rely on section_type filtering
+- Problem extraction uses regex patterns instead of section type tags
+
 ## Recommended Execution Order
 
-**Completed:** Phases 1-4 ✅
+**Completed:** Phases 1-6 ✅
+- Phase 1: Manifest (file inventory) ✅
+- Phase 2: PDF text extraction ✅
+- Phase 3: Doc type classification ✅
+- Phase 4: Exam coverage extraction ✅
+- Phase 4.5: Textbook TOC extraction ✅
+- Phase 5: Chunking (without section_type detection) ✅
+- Phase 6: Embeddings + FAISS index ✅
+
+**In Progress:** Phase 7 (RAG Scout) 🚧
 
 **Next:** 
 1. Phase 5 (verify/enhance chunking with section_type)

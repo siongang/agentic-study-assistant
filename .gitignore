@@ -97,4 +97,4 @@ Thumbs.db
 # Big files - ignore generated chunks and embeddings
 storage/state/chunks/
 storage/state/embeddings/
-storage/state/index/
+storage/state/
