@@ -38,6 +38,8 @@ class EnrichedTopic(BaseModel):
     )
     chunks_retrieved: int = Field(default=0, description="Number of chunks found")
     notes: str = Field(default="", description="Any warnings or issues")
+    # Store top chunk snippets for question generation
+    top_chunks: list[str] = Field(default_factory=list, description="Top 2-3 chunk excerpts")
 
 
 class EnrichedCoverage(BaseModel):

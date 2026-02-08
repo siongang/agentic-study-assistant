@@ -737,8 +737,7 @@ Schema:
           "practice_problems": "Challenge 5.2.2: Assigning Link Polarities (p. 143)",
           "key_terms": ["Ceteris Paribus", "Polarity", "Feedback Loop", "Delay"],
           "visuals": [],  # Optional: figure references if extractable
-          "golden_question": "Why must you use the 'Ceteris Paribus' assumption when signing a link?",
-          "prerequisite_check": "Review Feedback Basics (Ch 1.1.3) if you forget loop logic.",
+          "study_question": "Why must you use the 'Ceteris Paribus' assumption when signing a link?",
           "time_estimate_minutes": 75,
           "confidence_score": 0.85
         }
@@ -781,9 +780,8 @@ def generate_multi_exam_plan(
        - Aim for equal total minutes per exam across entire plan
        - Track cumulative minutes per exam, schedule from exam with least minutes
     
-    5. For each scheduled topic, generate:
-       - golden_question: Call LLM to generate Socratic question
-       - prerequisite_check: Call LLM to infer prerequisite knowledge (optional)
+    5. For each scheduled topic, optionally generate:
+       - study_question: Call LLM with RAG chunks to generate contextual question
     
     6. Format reading_pages and practice_problems as readable strings
     7. Output final JSON

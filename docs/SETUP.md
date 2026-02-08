@@ -126,7 +126,7 @@ GOOGLE_API_KEY=AIzaSy...your_actual_key_here
 
 # Model configuration (optional)
 EMBEDDING_MODEL=models/embedding-001
-CHAT_MODEL=gemini-2.0-flash-exp
+CHAT_MODEL=gemini-2.0-flash
 
 # Vector store configuration (optional)
 VECTOR_STORE_PATH=data/indexes
@@ -420,8 +420,8 @@ Once setup is complete:
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
 | `GOOGLE_API_KEY` | ✅ Yes | None | Your Google AI API key |
-| `EMBEDDING_MODEL` | No | `models/embedding-001` | Embedding model to use |
-| `CHAT_MODEL` | No | `gemini-2.0-flash-exp` | Chat model for agents |
+| `EMBEDDING_MODEL` | No | `gemini-embedding-001` | Embedding model to use |
+| `CHAT_MODEL` | No | `gemini-2.0-flash` | Chat model for agents |
 | `VECTOR_STORE_PATH` | No | `data/indexes` | Where to store vector indexes |
 | `CHUNK_SIZE` | No | `512` | Tokens per chunk |
 | `CHUNK_OVERLAP` | No | `128` | Overlap between chunks |

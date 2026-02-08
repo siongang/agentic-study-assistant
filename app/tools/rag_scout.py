@@ -96,10 +96,10 @@ def extract_practice_problems(
         for pattern in problem_patterns:
             matches = re.finditer(pattern, chunk.text, re.IGNORECASE)
             for match in matches:
-                # Extract snippet (50 chars after match)
+                # Extract snippet (200 chars after match to get full problem text)
                 start = match.start()
-                snippet = chunk.text[start:start + 100].strip()
-                # Clean up snippet
+                snippet = chunk.text[start:start + 250].strip()
+                # Clean up snippet (collapse multiple spaces/newlines)
                 snippet = re.sub(r'\s+', ' ', snippet)
                 
                 problem = PracticeProblem(
@@ -273,6 +273,15 @@ def enrich_topic(
     # Extract key terms
     key_terms = extract_key_terms(retrieved_chunks[:5], top_k=8)
     
+    # Store top chunk excerpts for question generation (limit to 2-3, max 400 chars each)
+    top_chunk_excerpts = []
+    for chunk in retrieved_chunks[:3]:
+        excerpt = chunk.text.strip()
+        # Truncate long chunks
+        if len(excerpt) > 400:
+            excerpt = excerpt[:400] + "..."
+        top_chunk_excerpts.append(excerpt)
+    
     # Add notes for low confidence
     notes = ""
     if avg_score < 0.6:
@@ -287,7 +296,8 @@ def enrich_topic(
         key_terms=key_terms,
         confidence_score=float(avg_score),
         chunks_retrieved=len(results),
-        notes=notes
+        notes=notes,
+        top_chunks=top_chunk_excerpts
     )
 
 

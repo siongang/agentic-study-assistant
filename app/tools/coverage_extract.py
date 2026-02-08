@@ -28,12 +28,19 @@ def extract_coverage(
     if len(full_text) > max_chars:
         text_to_analyze += "\n[...truncated...]"
     
-    prompt = f"""Extract exam coverage from this exam overview.
+    prompt = f"""Extract exam coverage from this exam overview document.
 
-Return JSON:
+Source filename: {filename}
+
+IMPORTANT: 
+- If the filename contains a course code (e.g., "HLTH 204", "SYSD 300", "PHYS 234"), include it in the exam_name
+- Format exam_name as: "COURSE CODE - Exam Name" (e.g., "HLTH 204 - Midterm Examination 1")
+- If no course code in filename, use the exam name from the document
+
+Return JSON with this exact structure:
 {{
   "exam_id": "midterm_1",
-  "exam_name": "Midterm Examination 1", 
+  "exam_name": "COURSE CODE - Midterm Examination 1", 
   "exam_date": "February 27, 2026",
   "chapters": [1, 2, 3],
   "topics": [
@@ -41,7 +48,7 @@ Return JSON:
   ]
 }}
 
-Document:
+Document text:
 {text_to_analyze}"""
     
     try:
