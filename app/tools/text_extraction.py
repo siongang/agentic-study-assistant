@@ -67,7 +67,7 @@ def extract_all_pending(
             _save_extracted_text(extracted, output_path)
             
             # Update manifest entry
-            artifact_path = f"state/extracted_text/{file_entry.file_id}.json"
+            artifact_path = f"storage/state/extracted_text/{file_entry.file_id}.json"
             if artifact_path not in file_entry.derived:
                 file_entry.derived.append(artifact_path)
             file_entry.status = "processed"

@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 
 from app.models.coverage import ExamCoverage
 from app.tools.rag_scout import enrich_coverage
+from app.tools.manifest_io import load_manifest, save_manifest
 
 
 def main():
@@ -18,6 +19,7 @@ def main():
     parser.add_argument("--min-score", type=float, default=0.6, help="Minimum similarity score")
     parser.add_argument("--no-chapter-filter", action="store_true", help="Disable chapter filtering")
     parser.add_argument("--output-dir", type=str, help="Custom output directory")
+    parser.add_argument("--force", action="store_true", help="Recompute even if enriched coverage already exists")
     
     args = parser.parse_args()
     
@@ -41,6 +43,25 @@ def main():
     
     output_dir.mkdir(parents=True, exist_ok=True)
     output_path = output_dir / f"{args.coverage_file_id}.json"
+    manifest_path = project_root / "storage" / "state" / "manifest.json"
+    enriched_artifact = f"storage/state/enriched_coverage/{args.coverage_file_id}.json"
+
+    # Skip if already enriched unless forced
+    if output_path.exists() and not args.force:
+        print(f"⚠️  Enriched coverage already exists: {output_path}")
+        manifest = load_manifest(manifest_path)
+        if manifest is not None:
+            updated = False
+            for file_entry in manifest.files:
+                if file_entry.file_id == args.coverage_file_id:
+                    if enriched_artifact not in file_entry.derived:
+                        file_entry.derived.append(enriched_artifact)
+                        updated = True
+                    break
+            if updated:
+                save_manifest(manifest, manifest_path)
+        print("Use --force to recompute.")
+        sys.exit(0)
     
     # Check files exist
     if not coverage_path.exists():

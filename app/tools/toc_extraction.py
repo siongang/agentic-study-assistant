@@ -53,7 +53,7 @@ def extract_all_textbook_tocs(
             continue
         
         # Check if already extracted AND successful (artifact exists with chapters)
-        toc_artifact = f"state/textbook_metadata/{file_entry.file_id}.json"
+        toc_artifact = f"storage/state/textbook_metadata/{file_entry.file_id}.json"
         if toc_artifact in file_entry.derived and not force:
             # Check if extraction was actually successful
             metadata_path = output_dir / f"{file_entry.file_id}.json"
@@ -182,7 +182,7 @@ def extract_single_textbook_toc(
         output_path.write_text(metadata.model_dump_json(indent=2))
         
         # Update manifest entry
-        toc_artifact = f"state/textbook_metadata/{file_entry.file_id}.json"
+        toc_artifact = f"storage/state/textbook_metadata/{file_entry.file_id}.json"
         if toc_artifact not in file_entry.derived:
             file_entry.derived.append(toc_artifact)
         

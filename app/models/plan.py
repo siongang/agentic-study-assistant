@@ -1,8 +1,18 @@
 """Study plan models (Phase 8)."""
 from datetime import date, datetime
 from typing import Optional
+from enum import Enum
 from pydantic import BaseModel, Field
 import uuid
+
+
+class Priority(str, Enum):
+    """Priority level for study topics."""
+    CRITICAL = "critical"      # Must study - foundational/high-value
+    HIGH = "high"              # Very important - likely to be tested
+    MEDIUM = "medium"          # Should know - might be tested  
+    LOW = "low"                # Good to know - less likely
+    OPTIONAL = "optional"      # Extra depth - review material
 
 
 class ExamInfo(BaseModel):
@@ -35,6 +45,8 @@ class StudyBlock(BaseModel):
     study_question: str = Field(default="", description="Question based on textbook content")
     time_estimate_minutes: int = Field(default=30, ge=0)
     confidence_score: float = Field(default=0.0, ge=0.0, le=1.0)
+    priority: Priority = Field(default=Priority.MEDIUM, description="Importance level")
+    priority_reason: str = Field(default="", description="Why this priority was assigned")
     notes: str = Field(default="", description="Warnings or special instructions")
 
 

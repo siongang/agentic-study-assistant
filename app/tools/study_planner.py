@@ -3,10 +3,10 @@ from pathlib import Path
 from datetime import date, datetime, timedelta
 import re
 import json
-from typing import Literal
+from typing import Literal, Optional
 
 from app.models.enriched_coverage import EnrichedCoverage, EnrichedTopic
-from app.models.plan import StudyPlan, StudyDay, StudyBlock, ExamInfo
+from app.models.plan import StudyPlan, StudyDay, StudyBlock, ExamInfo, Priority
 from app.tools.question_generator import generate_study_question
 
 
@@ -108,7 +108,10 @@ def format_practice_problems(topic: EnrichedTopic) -> list:
 def create_study_block(
     topic: EnrichedTopic,
     exam_info: ExamInfo,
-    generate_questions: bool = True
+    generate_questions: bool = True,
+    priority: Priority = Priority.MEDIUM,
+    priority_reason: str = "",
+    time_override: Optional[int] = None
 ) -> StudyBlock:
     """
     Create a study block from an enriched topic.
@@ -121,8 +124,8 @@ def create_study_block(
     Returns:
         StudyBlock with all fields populated
     """
-    # Estimate time
-    time_minutes = estimate_time_minutes(topic, topic.chapter)
+    # Estimate time (use override if provided by LLM, else use heuristics)
+    time_minutes = time_override if time_override else estimate_time_minutes(topic, topic.chapter)
     
     # Format resources
     reading = format_reading_pages(topic)
@@ -156,6 +159,8 @@ def create_study_block(
         study_question=study_question,
         time_estimate_minutes=time_minutes,
         confidence_score=topic.confidence_score,
+        priority=priority,
+        priority_reason=priority_reason,
         notes=notes
     )
 
@@ -166,7 +171,9 @@ def generate_multi_exam_plan(
     end_date: date,
     minutes_per_day: int = 90,
     strategy: Literal["round_robin", "priority_first", "balanced"] = "balanced",
-    generate_questions: bool = True
+    generate_questions: bool = True,
+    use_intelligent_priorities: bool = False,
+    priority_strategy: str = "balanced"
 ) -> StudyPlan:
     """
     Generate a multi-exam interleaved study plan.
@@ -178,6 +185,8 @@ def generate_multi_exam_plan(
         minutes_per_day: Target study minutes per day
         strategy: Scheduling strategy
         generate_questions: Whether to generate Socratic questions (slower)
+        use_intelligent_priorities: Use LLM to analyze and prioritize topics
+        priority_strategy: Strategy for LLM prioritization (if enabled)
         
     Returns:
         Complete StudyPlan
@@ -223,16 +232,56 @@ def generate_multi_exam_plan(
         )
         exams.append(exam_info)
     
+    # Optionally use LLM to prioritize topics
+    priority_map = {}
+    if use_intelligent_priorities:
+        print(f"\n[2/5] Analyzing priorities with LLM (strategy: {priority_strategy})...", flush=True)
+        from app.tools.intelligent_planner import prioritize_topics as prioritize_impl
+        
+        try:
+            priority_result = prioritize_impl(enriched_coverage_paths, strategy=priority_strategy)
+            
+            # Build lookup map: (chapter, objective) -> (priority, reason, time_estimate)
+            for item in priority_result["topics"]:
+                topic = item["topic"]
+                key = (topic.chapter, topic.bullet)
+                priority_map[key] = {
+                    "priority": Priority(item["priority"]),
+                    "reason": item["reason"],
+                    "time_estimate": item["time_estimate"]
+                }
+            
+            print(f"  ✓ Prioritized {len(priority_map)} topics")
+            print(f"  ✓ Time breakdown: {priority_result['time_breakdown']}")
+        except Exception as e:
+            print(f"  ⚠️ LLM prioritization failed: {e}")
+            print(f"  ✓ Falling back to heuristic priorities")
+    
     # Create work queue with all topics
-    print(f"\n[2/5] Building work queue...", flush=True)
+    print(f"\n[{'2/5' if not use_intelligent_priorities else '3/5'}] Building work queue...", flush=True)
     work_items = []
     for i, (coverage, exam_info) in enumerate(zip(coverages, exams)):
         for topic in coverage.topics:
+            # Get priority from LLM or use default
+            key = (topic.chapter, topic.bullet)
+            if key in priority_map:
+                priority_info = priority_map[key]
+                priority = priority_info["priority"]
+                priority_reason = priority_info["reason"]
+                time_minutes = priority_info["time_estimate"]
+            else:
+                # Default: use heuristics
+                priority = Priority.MEDIUM
+                priority_reason = ""
+                time_minutes = estimate_time_minutes(topic, topic.chapter)
+            
             work_items.append({
                 "topic": topic,
                 "exam_info": exam_info,
                 "exam_index": i,  # Used for round-robin
-                "minutes": estimate_time_minutes(topic, topic.chapter)
+                "minutes": time_minutes,
+                "priority": priority,
+                "priority_reason": priority_reason
             })
     
     total_topics = len(work_items)
@@ -241,11 +290,25 @@ def generate_multi_exam_plan(
     print(f"  ✓ Total estimated time: {total_minutes // 60}h {total_minutes % 60}m")
     
     # Apply scheduling strategy
-    print(f"\n[3/5] Scheduling with '{strategy}' strategy...", flush=True)
+    step_num = "3/5" if not use_intelligent_priorities else "4/5"
+    print(f"\n[{step_num}] Scheduling with '{strategy}' strategy...", flush=True)
+    
+    # Priority ordering helper
+    priority_order = {
+        Priority.CRITICAL: 0,
+        Priority.HIGH: 1,
+        Priority.MEDIUM: 2,
+        Priority.LOW: 3,
+        Priority.OPTIONAL: 4
+    }
     
     if strategy == "round_robin":
-        # Cycle through exams evenly
-        work_items.sort(key=lambda x: (x["exam_index"], x["topic"].chapter))
+        # Cycle through exams evenly, but within each exam respect priority
+        work_items.sort(key=lambda x: (
+            x["exam_index"], 
+            priority_order.get(x.get("priority", Priority.MEDIUM), 2),
+            x["topic"].chapter
+        ))
         scheduled_items = []
         exam_queues = {exam.exam_id: [] for exam in exams}
         
@@ -259,12 +322,22 @@ def generate_multi_exam_plan(
                     scheduled_items.append(exam_queues[exam_id].pop(0))
     
     elif strategy == "priority_first":
-        # Process exams in order (first exam first, then second exam)
-        work_items.sort(key=lambda x: (x["exam_index"], x["topic"].chapter))
+        # Sort by priority first, then exam order, then chapter
+        work_items.sort(key=lambda x: (
+            priority_order.get(x.get("priority", Priority.MEDIUM), 2),
+            x["exam_index"], 
+            x["topic"].chapter
+        ))
         scheduled_items = work_items
     
     else:  # balanced
-        # Aim for equal total minutes per exam
+        # Aim for equal total minutes per exam, but prioritize within each exam
+        # First sort by priority within each exam
+        work_items.sort(key=lambda x: (
+            priority_order.get(x.get("priority", Priority.MEDIUM), 2),
+            x["topic"].chapter
+        ))
+        
         exam_minutes = {exam.exam_id: 0 for exam in exams}
         scheduled_items = []
         
@@ -272,7 +345,7 @@ def generate_multi_exam_plan(
             # Find exam with least total minutes
             min_exam = min(exam_minutes.items(), key=lambda x: x[1])[0]
             
-            # Find next item for that exam
+            # Find next item for that exam (already priority-sorted)
             for item in work_items:
                 if item["exam_info"].exam_id == min_exam:
                     scheduled_items.append(item)
@@ -283,7 +356,8 @@ def generate_multi_exam_plan(
     print(f"  ✓ Scheduled {len(scheduled_items)} topics")
     
     # Allocate to days
-    print(f"\n[4/5] Allocating topics to days...", flush=True)
+    step_num = "4/5" if not use_intelligent_priorities else "5/5"
+    print(f"\n[{step_num}] Allocating topics to days...", flush=True)
     days = []
     current_date = start_date
     current_day = None
@@ -311,7 +385,10 @@ def generate_multi_exam_plan(
         block = create_study_block(
             topic=item["topic"],
             exam_info=item["exam_info"],
-            generate_questions=False  # Batch later
+            generate_questions=False,  # Batch later
+            priority=item.get("priority", Priority.MEDIUM),
+            priority_reason=item.get("priority_reason", ""),
+            time_override=item["minutes"]
         )
         current_day.add_block(block)
     
@@ -323,7 +400,8 @@ def generate_multi_exam_plan(
     
     # Generate study questions in batch
     if generate_questions:
-        print(f"\n[5/5] Generating study questions from textbook...", flush=True)
+        step_num = "5/5" if not use_intelligent_priorities else "6/5"
+        print(f"\n[{step_num}] Generating study questions from textbook...", flush=True)
         all_blocks = [block for day in days for block in day.blocks]
         
         # Need to map blocks back to their enriched topics to get chunk excerpts
@@ -356,7 +434,8 @@ def generate_multi_exam_plan(
         
         print(f"  ✓ Generated {questions_generated}/{total_blocks} study questions")
     else:
-        print(f"\n[5/5] Skipping question generation (can add later)")
+        step_num = "5/5" if not use_intelligent_priorities else "6/5"
+        print(f"\n[{step_num}] Skipping question generation (can add later)")
     
     # Create plan
     plan = StudyPlan(

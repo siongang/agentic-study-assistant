@@ -50,7 +50,7 @@ def extract_all_exam_overviews(
             continue
         
         # Check if already extracted (artifact exists)
-        coverage_artifact = f"state/coverage/{file_entry.file_id}.json"
+        coverage_artifact = f"storage/state/coverage/{file_entry.file_id}.json"
         if coverage_artifact in file_entry.derived:
             stats["skipped"] += 1
             continue

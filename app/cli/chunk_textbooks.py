@@ -104,7 +104,8 @@ def main():
                 textbook_metadata_dir=textbook_metadata_dir,
                 coverage_dir=coverage_dir,
                 filename=file_entry.filename,
-                max_tokens=700,
+                target_tokens=700,
+                max_tokens=900,
                 overlap_tokens=100
             )
             
@@ -145,7 +146,7 @@ def main():
             append_chunks_jsonl(chunks, chunks_output)
             
             # Update manifest
-            chunks_artifact = "state/chunks/chunks.jsonl"
+            chunks_artifact = "storage/state/chunks/chunks.jsonl"
             if chunks_artifact not in file_entry.derived:
                 file_entry.derived.append(chunks_artifact)
             

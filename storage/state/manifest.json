@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "last_scan": "2026-02-08T00:45:16.637710+00:00",
+  "last_scan": "2026-02-08T10:03:40.606781+00:00",
   "files": [
     {
-      "file_id": "a4850aad-b76a-4fb8-946f-4fc91c415bbb",
+      "file_id": "1583ad15-ade1-4034-862c-169767eba547",
       "path": "David H McIntyre_ Corinne A Manogue_ Janet Tate_ Oregon State Un - Quantum mechanics _ a paradigms approach (2012, Pearson ).pdf",
       "filename": "David H McIntyre_ Corinne A Manogue_ Janet Tate_ Oregon State Un - Quantum mechanics _ a paradigms approach (2012, Pearson ).pdf",
       "sha256": "20eccf4304459b65d4d84e7b593d4f8ebe73cca784e2a461d9dc74e758ab9c5a",
@@ -12,16 +12,15 @@
       "doc_type": "textbook",
       "status": "processed",
       "derived": [
-        "state/extracted_text/a4850aad-b76a-4fb8-946f-4fc91c415bbb.json",
-        "state/textbook_metadata/a4850aad-b76a-4fb8-946f-4fc91c415bbb.json",
-        "state/chunks/chunks.jsonl"
+        "storage/state/extracted_text/1583ad15-ade1-4034-862c-169767eba547.json",
+        "storage/state/textbook_metadata/1583ad15-ade1-4034-862c-169767eba547.json"
       ],
       "error": null,
-      "doc_confidence": 0.99,
-      "doc_reasoning": "The document displays a title page with authors, publisher information (Pearson), and production credits, which are all hallmarks of a published textbook. It does not contain elements of a syllabus or exam overview."
+      "doc_confidence": 1.0,
+      "doc_reasoning": "The document displays a title page with the book title 'QUANTUM MECHANICS A Paradigms Approach', authors, publisher (Pearson), and detailed production credits, which are all characteristic features of a published textbook."
     },
     {
-      "file_id": "7c98e30d-a2c8-4ca5-959b-144397f37ac9",
+      "file_id": "4b8246a9-8edf-492d-aa27-3f415ba4d9aa",
       "path": "HLTH 204 - Midterm 1 Overview.pdf",
       "filename": "HLTH 204 - Midterm 1 Overview.pdf",
       "sha256": "19d231588bda809120be8ca18de82ef64108952345f5d838d0eacfaf47074ef3",
@@ -30,15 +29,15 @@
       "doc_type": "exam_overview",
       "status": "processed",
       "derived": [
-        "state/extracted_text/7c98e30d-a2c8-4ca5-959b-144397f37ac9.json",
-        "state/coverage/7c98e30d-a2c8-4ca5-959b-144397f37ac9.json"
+        "storage/state/extracted_text/4b8246a9-8edf-492d-aa27-3f415ba4d9aa.json",
+        "storage/state/coverage/4b8246a9-8edf-492d-aa27-3f415ba4d9aa.json"
       ],
       "error": null,
       "doc_confidence": 1.0,
-      "doc_reasoning": "The document is explicitly titled 'Midterm Examination 1: Overview' and lists the date, chapters covered, and detailed topics within those chapters that will be on the exam. This perfectly matches the definition of an exam_overview."
+      "doc_reasoning": "The document is explicitly titled 'Midterm Examination 1: Overview', lists the exam date, specifies chapters covered, and details the fundamental concepts and topics that will be included in the examination. It does not contain grading policies, a full course schedule, or detailed instructional content like a textbook."
     },
     {
-      "file_id": "b1c4dae3-e4d4-479e-97e4-efe34532b9f0",
+      "file_id": "51258c2f-ac86-42d1-a34a-8559600b8fe9",
       "path": "HLTH 204 - Syllabus.pdf",
       "filename": "HLTH 204 - Syllabus.pdf",
       "sha256": "a9e83b82795380bdf51f58dbfcec72f40baf97baf4e483adc0c734b8df509069",
@@ -47,14 +46,14 @@
       "doc_type": "syllabus",
       "status": "processed",
       "derived": [
-        "state/extracted_text/b1c4dae3-e4d4-479e-97e4-efe34532b9f0.json"
+        "storage/state/extracted_text/51258c2f-ac86-42d1-a34a-8559600b8fe9.json"
       ],
       "error": null,
       "doc_confidence": 1.0,
-      "doc_reasoning": "The document is explicitly titled 'Course Outline' and includes a course description, a list of topics to be covered, and a detailed weekly schedule with dates, topics, and assignment deadlines. The filename also contains 'Syllabus'."
+      "doc_reasoning": "The document is explicitly titled 'Course Outline', includes a 'Course description', lists 'topics' to be covered, and provides a detailed 'Schedule' with weekly topics and assignment deadlines, all characteristic features of a syllabus."
     },
     {
-      "file_id": "908eb7eb-ef6a-4b21-9ade-c3d8214a1b1f",
+      "file_id": "51c67776-97cb-4a37-a1e9-a9a8ebeae0b7",
       "path": "PHYS 234 - Midterm 1 Overview.pdf",
       "filename": "PHYS 234 - Midterm 1 Overview.pdf",
       "sha256": "0cde16e2c2f0bf866876b2bc306eb5e95bdf7717b1abbac7768ee11e3b1e5660",
@@ -63,15 +62,15 @@
       "doc_type": "exam_overview",
       "status": "processed",
       "derived": [
-        "state/extracted_text/908eb7eb-ef6a-4b21-9ade-c3d8214a1b1f.json",
-        "state/coverage/908eb7eb-ef6a-4b21-9ade-c3d8214a1b1f.json"
+        "storage/state/extracted_text/51c67776-97cb-4a37-a1e9-a9a8ebeae0b7.json",
+        "storage/state/coverage/51c67776-97cb-4a37-a1e9-a9a8ebeae0b7.json"
       ],
       "error": null,
       "doc_confidence": 1.0,
-      "doc_reasoning": "The document is explicitly titled 'Midterm Examination 1: Topics and Concepts' and details the chapters and specific concepts that will be covered on the exam, which perfectly aligns with the definition of an exam overview."
+      "doc_reasoning": "The document is explicitly titled 'Midterm Examination 1: Topics and Concepts' and provides a detailed list of chapters and specific topics covered for the exam, which perfectly matches the definition of an exam overview."
     },
     {
-      "file_id": "17d50151-db40-466e-8791-9f869023eec4",
+      "file_id": "5842fbda-c768-44a8-974e-0d5c4436a1e5",
       "path": "John D Sterman - Business Dynamics Systems Thinking and Modeling for a Complex World-McGraw-Hill Higher Education 2000.pdf",
       "filename": "John D Sterman - Business Dynamics Systems Thinking and Modeling for a Complex World-McGraw-Hill Higher Education 2000.pdf",
       "sha256": "c000e3710e8605c97ac236698459a75fbfd0bc18938c5a62d57cfab5031820f4",
@@ -80,16 +79,15 @@
       "doc_type": "textbook",
       "status": "processed",
       "derived": [
-        "state/extracted_text/17d50151-db40-466e-8791-9f869023eec4.json",
-        "state/textbook_metadata/17d50151-db40-466e-8791-9f869023eec4.json",
-        "state/chunks/chunks.jsonl"
+        "storage/state/extracted_text/5842fbda-c768-44a8-974e-0d5c4436a1e5.json",
+        "storage/state/textbook_metadata/5842fbda-c768-44a8-974e-0d5c4436a1e5.json"
       ],
       "error": null,
       "doc_confidence": 0.99,
-      "doc_reasoning": "The document includes an ISBN, a clear title and author, publisher information (McGraw-Hill Higher Education), copyright details, and a list of publisher locations, all of which are characteristic of a published textbook."
+      "doc_reasoning": "The document includes an ISBN, a clear title 'BUSINESS DYNAMICS : SYSTEMS THINKING AND MODELING FOR A COMPLEX WORLD', an author (John D. Sterman), and a major educational publisher (McGraw-Hill Higher Education) with a copyright notice. These are all definitive characteristics of a textbook."
     },
     {
-      "file_id": "bf07da5a-ad48-4bb6-99ea-6b3e05f83dc5",
+      "file_id": "ade23305-7931-4227-ba03-485d011d52cc",
       "path": "SYSD 300 - Midterm 1 Overview.pdf",
       "filename": "SYSD 300 - Midterm 1 Overview.pdf",
       "sha256": "5f8f08f30decc2aaeed813ed80f02a9ef73c44d60abb397c2f36a0f40ee22145",
@@ -98,15 +96,15 @@
       "doc_type": "exam_overview",
       "status": "processed",
       "derived": [
-        "state/extracted_text/bf07da5a-ad48-4bb6-99ea-6b3e05f83dc5.json",
-        "state/coverage/bf07da5a-ad48-4bb6-99ea-6b3e05f83dc5.json"
+        "storage/state/extracted_text/ade23305-7931-4227-ba03-485d011d52cc.json",
+        "storage/state/coverage/ade23305-7931-4227-ba03-485d011d52cc.json"
       ],
       "error": null,
       "doc_confidence": 1.0,
-      "doc_reasoning": "The document is explicitly titled 'Midterm Examination 1: Topics and Concepts', lists the exam date, specifies chapter coverage, and details key topics within those chapters, which perfectly matches the definition of an exam overview document."
+      "doc_reasoning": "The document is explicitly titled 'Midterm Examination 1: Topics and Concepts', lists the exam date, specifies chapter coverage, and details key topics within those chapters, which perfectly aligns with an exam preparation document."
     },
     {
-      "file_id": "a1aaf0cb-bce0-48be-8bbe-1a64a58b748f",
+      "file_id": "c4d23831-9a0c-451a-98ca-4e93ab9f8722",
       "path": "PHYS 234 - Syllabus.pdf",
       "filename": "PHYS 234 - Syllabus.pdf",
       "sha256": "5d7537c2d133d076b55dcb08cea7b805c1736f5a562bc7ef0e53074ae6c7c22b",
@@ -115,14 +113,14 @@
       "doc_type": "syllabus",
       "status": "processed",
       "derived": [
-        "state/extracted_text/a1aaf0cb-bce0-48be-8bbe-1a64a58b748f.json"
+        "storage/state/extracted_text/c4d23831-9a0c-451a-98ca-4e93ab9f8722.json"
       ],
       "error": null,
-      "doc_confidence": 1.0,
-      "doc_reasoning": "The document is explicitly titled 'Course Outline' and includes a course description, prerequisites, required textbook, and a detailed weekly schedule with topics and key focus areas, which are all characteristic elements of a syllabus."
+      "doc_confidence": 0.98,
+      "doc_reasoning": "The document is explicitly titled 'Course Outline' and includes a detailed course description, prerequisites, required textbook, and a weekly schedule with topics and key focus areas, which are all characteristic elements of a course syllabus."
     },
     {
-      "file_id": "803570a2-592f-4cda-9aab-60e05f861faa",
+      "file_id": "cf2eb387-4810-4875-a30f-5e8e75dfb70a",
       "path": "Marc M. Triola, Mario F. Triola, Jason Roy - Biostatistics for the Biological and Health Sciences (2nd Edition) (2017, Pearson).pdf",
       "filename": "Marc M. Triola, Mario F. Triola, Jason Roy - Biostatistics for the Biological and Health Sciences (2nd Edition) (2017, Pearson).pdf",
       "sha256": "5e2116fba83913866b7dc450dc8e137a6a0f1634a03b95131c7d15761b6a458d",
@@ -131,16 +129,16 @@
       "doc_type": "textbook",
       "status": "processed",
       "derived": [
-        "state/extracted_text/803570a2-592f-4cda-9aab-60e05f861faa.json",
-        "state/textbook_metadata/803570a2-592f-4cda-9aab-60e05f861faa.json",
-        "state/chunks/chunks.jsonl"
+        "storage/state/extracted_text/cf2eb387-4810-4875-a30f-5e8e75dfb70a.json",
+        "storage/state/textbook_metadata/cf2eb387-4810-4875-a30f-5e8e75dfb70a.json",
+        "storage/state/chunks/chunks.jsonl"
       ],
       "error": null,
       "doc_confidence": 1.0,
-      "doc_reasoning": "The filename clearly indicates a published textbook with authors, title, edition, and publisher. The content includes a title page with authors and affiliations, a dedication, and descriptions of pedagogical features and supplementary online resources (MyStatLab, StatTalk Videos) commonly found in textbooks."
+      "doc_reasoning": "The filename clearly indicates a textbook with authors, title, edition, and publisher. The content includes a title page with authors and affiliations, a dedication, and descriptions of pedagogical features and supplementary online resources (MyStatLab, StatTalk Videos) commonly associated with educational textbooks."
     },
     {
-      "file_id": "8843a310-a76c-4ccc-a211-4f129d87c432",
+      "file_id": "e10de8d9-cd15-4878-ba96-2b5aab630ebf",
       "path": "SYSD 300 - Syllabus.pdf",
       "filename": "SYSD 300 - Syllabus.pdf",
       "sha256": "da2a22ac83a219369d605d5c42de3520f2bac9aa3710591db637fcf038ed5bcb",
@@ -149,11 +147,11 @@
       "doc_type": "syllabus",
       "status": "processed",
       "derived": [
-        "state/extracted_text/8843a310-a76c-4ccc-a211-4f129d87c432.json"
+        "storage/state/extracted_text/e10de8d9-cd15-4878-ba96-2b5aab630ebf.json"
       ],
       "error": null,
       "doc_confidence": 1.0,
-      "doc_reasoning": "The document is explicitly titled 'Course Outline' and includes a 'Course description', a list of 'topics' to be covered, and a detailed 'Schedule' with weekly content and quiz dates. The filename also contains 'Syllabus'."
+      "doc_reasoning": "The document is explicitly titled 'Course Outline' and the filename includes 'Syllabus.pdf'. It contains a course description, a list of topics to be covered, and a detailed weekly schedule with dates and quiz information, all characteristic elements of a course syllabus."
     }
   ]
 }
