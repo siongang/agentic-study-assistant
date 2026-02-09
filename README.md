@@ -42,7 +42,9 @@ cp .env.example .env
 # Edit .env with your API key
 ```
 
-### 2. Add required materials (textbooks, midterm information, syllabus)
+### 2. Add required materials
+
+Place PDFs in `storage/uploads/`: textbooks, syllabus, and midterm/exam overview documents.
 
 ### 3. Run the agent
 
@@ -63,7 +65,7 @@ adk web
 ✓ Generated study plan: 18 days, avg 2.3 topics/day
 ✓ Coverage: 100%
 
-Plan saved to data/plans/study_plan.md
+Plan saved to storage/state/plans/<plan_id>.md
 ```
 
 ---
@@ -87,25 +89,20 @@ Plan saved to data/plans/study_plan.md
 
 ## Core Workflow
 
-### Phase 1: Ingestion (automatic)
+**Deterministic data plane** (file-driven, predictable):
 
-1. **Parse PDF** → raw text + page numbers
-2. **Extract topics** → structured topic inventory (source of truth)
-3. **Chunk text** → overlapping chunks with topic IDs
-4. **Embed chunks** → vector store for RAG
+1. **Manifest** — Scan `storage/uploads/`, track files by SHA-256 in `storage/state/manifest.json`
+2. **Text extraction** — PyMuPDF extracts text; cache in `storage/state/extracted_text/`
+3. **Classification** — Rule-based labels: syllabus, exam_overview, textbook
+4. **Coverage extraction** — From exam overviews: exam date, chapters, topic bullets → `storage/state/coverage/`
+5. **Chunk & index** — Textbook chunked (600–900 tokens), embedded, FAISS index in `storage/state/index/`
 
-### Phase 2: Planning
+**Agentic logic** (ADK agents):
 
-1. **Load topic inventories** from all textbooks
-2. **Allocate topics to days** (today → exam date)
-3. **Verify coverage** (all topics scheduled ≥1x)
-4. **Check constraints** (workload limits, deadlines)
-
-### Phase 3: Tutoring
-
-- Query → retrieve relevant chunks → generate explanation
-- Always cite page numbers and sections
-- Offer practice questions
+6. **Readiness gate** — Check manifest and coverage; prompt for missing materials if needed
+7. **Study plan** — RAG links objectives to textbook pages; build daily schedule → `storage/state/plans/`
+8. **Root agent** — Routes to Ingest, Planner, or Tutor; runs sync and readiness checks
+9. **Tutoring** — RAG retrieval + LLM answers with page citations
 
 ---
 
@@ -201,8 +198,9 @@ Plan saved to data/plans/study_plan.md
 
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — Technical deep-dive
 - [`docs/SETUP.md`](docs/SETUP.md) — Installation and configuration
-- [`docs/USAGE.md`](docs/USAGE.md) — Detailed usage guide
-- [`app/README.md`](app/README.md) — Code structure guide
+- [`docs/AGENT_QUICKSTART.md`](docs/AGENT_QUICKSTART.md) — Running the agent and example flows
+- [`docs/EXECUTION_PLAN.md`](docs/EXECUTION_PLAN.md) — Phase-by-phase implementation plan
+- [`storage/README.md`](storage/README.md) — Storage layout and artifacts
 
 ---
 

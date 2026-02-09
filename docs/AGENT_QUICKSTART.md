@@ -173,6 +173,7 @@ pip install google-genai google-adk
 "Process my files and build the index"
 
 # Or run CLI directly:
+python -m app.cli.chunk_textbooks
 python -m app.cli.build_index
 ```
 
@@ -191,8 +192,8 @@ python -m app.cli.enrich_coverage <file_id>
 
 **Check:**
 1. API key is set in `.env`
-2. Files are uploaded to `uploads/` directory
-3. Run `sync_files()` tool manually
+2. Files are in `storage/uploads/`
+3. Run sync (e.g. "Process my files" or `sync_files` tool) so manifest and index are updated
 
 ---
 
@@ -326,7 +327,7 @@ print(f"Found {len(result['exams'])} exams")
 
 1. **Install ADK** - Run `pip install -r requirements.txt`
 2. **Test Launch** - Run `adk run` and try chatting
-3. **Upload Files** - Add PDFs to `uploads/` directory
+3. **Upload Files** - Add PDFs to `storage/uploads/`
 4. **Process Files** - Tell agent to process them
 5. **Create Plan** - Generate your first study schedule
 6. **Ask Questions** - Test the tutoring functionality

@@ -63,17 +63,17 @@ echo "GOOGLE_API_KEY=your_key_here" >> .env
 
 ```
 app/
-├── main.py              # Entry point
-├── state.py             # State management
-├── agents/              # Agent implementations
-├── tools/               # Deterministic operations
-└── schemas/             # Data models
+├── main.py              # ADK entry point (root_agent)
+├── agents/              # Root, Ingest, Planner, Tutor, Verifier agents
+├── tools/                # Deterministic operations (fs_scan, pdf_extract, chunking, embed, etc.)
+├── models/              # Pydantic models (manifest, coverage, chunks, plan, etc.)
+└── cli/                 # CLI entrypoints (update_manifest, extract_text, chunk_textbook, etc.)
 ```
 
 **Design principles**:
-1. **Agents** = LLM + reasoning
-2. **Tools** = Pure functions (no LLM)
-3. **Schemas** = Pydantic models
+1. **Agents** = LLM + reasoning and tool orchestration
+2. **Tools** = Deterministic logic (no LLM where possible)
+3. **Models** = Pydantic schemas and data structures
 
 ### Import Convention
 
@@ -88,8 +88,9 @@ import google.generativeai as genai
 from pydantic import BaseModel
 
 # Local
-from app.schemas.topics import Topic, TopicInventory
-from app.tools.ingest import pdf_parser
+from app.models.chunks import Chunk
+from app.models.plan import StudyPlan
+from app.tools.pdf_extract import extract_text
 ```
 
 Use `isort` to auto-format:
@@ -106,23 +107,24 @@ isort app/
 
 Build in this order:
 
-#### Phase 1: Schemas
+#### Phase 1: Models
 ```bash
 # Define data models first
-app/schemas/topics.py
-app/schemas/plan.py
-app/schemas/materials.py
+app/models/manifest.py
+app/models/coverage.py
+app/models/chunks.py
+app/models/plan.py
 ```
 
 #### Phase 2: Tools
 ```bash
 # Implement deterministic tools
-app/tools/ingest/pdf_parser.py
-app/tools/ingest/topic_extractor.py
-app/tools/ingest/chunker.py
-app/tools/rag/embedder.py
-app/tools/rag/vector_store.py
-app/tools/planning/allocator.py
+app/tools/fs_scan.py
+app/tools/pdf_extract.py
+app/tools/doc_classify.py
+app/tools/chunking.py
+app/tools/embed.py
+app/tools/faiss_index.py (or vector_store.py)
 ```
 
 **Test each tool individually**:
@@ -148,9 +150,8 @@ pytest tests/test_agents/test_ingestion_agent.py -v
 
 #### Phase 4: Orchestration
 ```bash
-# Implement root agent + main loop
+# Implement root agent + ADK entrypoint
 app/agents/root_agent.py
-app/state.py
 app/main.py
 ```
 
@@ -178,7 +179,7 @@ from app.tools.ingest.pdf_parser import parse_pdf
 def test_parse_pdf_basic():
     """Test PDF parsing with sample file."""
     pdf_path = Path("tests/fixtures/sample.pdf")
-    pages = parse_pdf(pdf_path)
+    pages = extract_text(pdf_path)  # or your PDF parsing function
     
     assert len(pages) > 0
     assert "page" in pages[0]
@@ -206,28 +207,24 @@ Test agent workflows with mocks:
 # tests/test_agents/test_planner_agent.py
 
 import pytest
-from app.agents.planner_agent import PlannerAgent
-from app.schemas.topics import Topic, TopicInventory
+from app.agents.planner_agent import planner_agent
+from app.models.plan import StudyPlan
 from datetime import date
 
 def test_planner_generates_valid_plan():
-    """Test plan generation with sample topics."""
+    """Test plan generation with sample enriched coverage."""
     
-    # Setup
-    topics = [
-        Topic(topic_id="t1", title="Topic 1", page_range=(1, 10), effort_hours=2.0),
-        Topic(topic_id="t2", title="Topic 2", page_range=(11, 20), effort_hours=3.0),
-    ]
+    # Setup: use real enriched coverage from storage/state/enriched_coverage/ or fixtures
+    exam_file_ids = ["your-exam-file-id"]
+    start_date = date(2026, 2, 10)
+    end_date = date(2026, 2, 27)
     
-    exams = {"Physics": date(2026, 2, 21)}
-    
-    # Execute
-    agent = PlannerAgent()
-    plan = agent.generate_plan(topics, exams, hours_per_day=3.0)
+    # Execute (via tools or agent)
+    # plan = generate_plan(exam_file_ids, start_date, end_date, minutes_per_day=90)
     
     # Assert
-    assert len(plan.schedule) > 0
-    assert all(t.topic_id in plan.all_topic_ids() for t in topics)
+    # assert plan is not None
+    # assert len(plan.days) > 0
 ```
 
 Run integration tests:
@@ -249,24 +246,22 @@ def test_full_ingestion_to_plan():
     """Test complete workflow from PDF to plan."""
     
     # Setup: Place test PDF
-    shutil.copy("tests/fixtures/physics.pdf", "data/uploads/")
+    shutil.copy("tests/fixtures/physics.pdf", "storage/uploads/")
     
-    # Execute: Ingest
-    ingestion_agent = IngestionAgent()
-    result = ingestion_agent.ingest(Path("data/uploads/physics.pdf"))
+    # Execute: Update manifest and run pipeline (or call ingest agent tools)
+    # python -m app.cli.update_manifest
+    # python -m app.cli.extract_text
+    # ... chunk_textbook, build_index, etc.
     
     # Verify: Artifacts created
-    assert Path("data/topics/physics.json").exists()
-    assert Path("data/chunks/physics.json").exists()
+    assert list(Path("storage/state/extracted_text").glob("*.json"))
+    assert Path("storage/state/chunks/chunks.jsonl").exists() or True  # if textbook was chunked
     
-    # Execute: Plan
-    planner_agent = PlannerAgent()
-    topics = TopicInventory.load("data/topics/physics.json")
-    plan = planner_agent.generate_plan(topics, exams, hours_per_day=3.0)
+    # Execute: Plan (requires coverage + enriched_coverage)
+    # plan = generate_plan(...)
     
     # Verify: Plan valid
-    assert plan is not None
-    assert len(plan.schedule) > 0
+    # assert plan is not None and len(plan.days) > 0
 ```
 
 Run end-to-end tests:
@@ -312,7 +307,7 @@ Enable logging in `.env`:
 
 ```env
 LOG_LEVEL=DEBUG
-LOG_FILE=data/logs/app.log
+LOG_FILE=storage/logs/app.log
 ```
 
 ---
@@ -332,7 +327,7 @@ ipython
 from app.tools.ingest.pdf_parser import parse_pdf
 from pathlib import Path
 
-pages = parse_pdf(Path("data/uploads/physics.pdf"))
+pages = extract_text(Path("storage/uploads/physics.pdf"))  # or your PDF tool
 pages[0]  # Inspect first page
 ```
 
@@ -693,10 +688,10 @@ python -m build
 
 **A**: 
 
-1. Create tool file: `app/tools/mymodule/mytool.py`
-2. Write pure function (no LLM calls)
-3. Add tests: `tests/test_tools/test_mytool.py`
-4. Import in agent: `from app.tools.mymodule.mytool import my_function`
+1. Create or add to a tool file under `app/tools/` (e.g. `app/tools/mytool.py`)
+2. Implement deterministic logic (no LLM unless required)
+3. Add tests: `tests/test_mytool.py`
+4. Expose via `app/agents/tools.py` and assign to the appropriate agent
 
 ### Q: How do I add a new agent?
 

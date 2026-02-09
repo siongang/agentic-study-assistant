@@ -25,7 +25,7 @@ Upload Directory
             - Ready for Planner Agent
 ```
 
-**Input:** Raw PDF files in `uploads/`  
+**Input:** Raw PDF files in `storage/uploads/`  
 **Output:** Indexed, searchable chunks in FAISS  
 **Duration:** 20-60s per file  
 **Status Check:** `check_readiness()`

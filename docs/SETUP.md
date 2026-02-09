@@ -129,7 +129,7 @@ EMBEDDING_MODEL=models/embedding-001
 CHAT_MODEL=gemini-2.0-flash
 
 # Vector store configuration (optional)
-VECTOR_STORE_PATH=data/indexes
+VECTOR_STORE_PATH=storage/state/index
 CHUNK_SIZE=512
 CHUNK_OVERLAP=128
 
@@ -142,27 +142,26 @@ MAX_HOURS_PER_DAY=8.0
 
 ### 3. Verify directory structure
 
-The following directories should exist (they're created by the installer):
+The project uses `storage/` for all data. Ensure these exist:
 
 ```bash
-ls -la data/
+ls -la storage/
 ```
 
-Expected output:
+Expected layout:
 
 ```
-data/
+storage/
 ├── uploads/     # Place your PDFs here
-├── topics/      # (empty initially)
-├── chunks/      # (empty initially)
-├── indexes/     # (empty initially)
-└── plans/       # (empty initially)
+├── state/       # manifest.json, extracted_text/, chunks/, index/, coverage/, plans/, etc.
+├── logs/        # (optional)
+└── topics/      # (optional / reserved)
 ```
 
-If any are missing, create them:
+If needed, create the minimal structure:
 
 ```bash
-mkdir -p data/{uploads,topics,chunks,indexes,plans}
+mkdir -p storage/uploads storage/state storage/logs
 ```
 
 ---
@@ -218,10 +217,10 @@ You should see a friendly response from Gemini.
 
 ## Directory Permissions
 
-Ensure the application can read/write to the data directories:
+Ensure the application can read/write to the storage directories:
 
 ```bash
-chmod -R u+rw data/
+chmod -R u+rw storage/
 ```
 
 ---
@@ -289,7 +288,7 @@ load_dotenv()
 **Solution**: Check directory permissions:
 
 ```bash
-chmod -R u+rw data/indexes/
+chmod -R u+rw storage/state/index/
 ```
 
 ---
@@ -307,7 +306,7 @@ chmod -R u+rw data/indexes/
 
 ```bash
 # Test manually
-python -c "import fitz; doc = fitz.open('data/uploads/your_file.pdf'); print(f'Pages: {len(doc)}')"
+python -c "import fitz; doc = fitz.open('storage/uploads/your_file.pdf'); print(f'Pages: {len(doc)}')"
 ```
 
 If this fails, try re-downloading the PDF or using a different PDF tool.
@@ -339,7 +338,7 @@ for chunk in chunks:
 vectors = embed_batch(chunks, batch_size=50)
 ```
 
-This is already implemented in `tools/rag/embedder.py`.
+This is already implemented in `app/tools/embed.py` (batch embedding).
 
 ---
 
@@ -369,10 +368,10 @@ for page_num in range(len(doc)):
 from pathlib import Path
 
 # Instead of:
-path = "data/uploads/file.pdf"
+path = Path("storage") / "uploads" / "file.pdf"
 
 # Use:
-path = Path("data") / "uploads" / "file.pdf"
+path = Path("storage") / "uploads" / "file.pdf"
 ```
 
 All code in this project uses `pathlib`.
@@ -386,20 +385,21 @@ All code in this project uses `pathlib`.
 1. **Place a test PDF** (any PDF, even a 1-page document):
 
    ```bash
-   cp ~/Downloads/sample.pdf data/uploads/test.pdf
+   cp ~/Downloads/sample.pdf storage/uploads/test.pdf
    ```
 
-2. **Run the ingestion agent** (when implemented):
+2. **Update manifest and run extraction**:
 
    ```bash
-   python -m app.tools.ingest.pdf_parser data/uploads/test.pdf
+   python -m app.cli.update_manifest
+   python -m app.cli.extract_text
    ```
 
 3. **Check output**:
 
    ```bash
-   ls data/topics/
-   # Should show: test.json
+   ls storage/state/extracted_text/
+   # Should show JSON files per file_id
    ```
 
 ---
@@ -408,10 +408,10 @@ All code in this project uses `pathlib`.
 
 Once setup is complete:
 
-1. Read the [Usage Guide](USAGE.md) to learn how to use the system
+1. Read [Agent Quickstart](AGENT_QUICKSTART.md) to run the agent and try example flows
 2. Read the [Architecture](ARCHITECTURE.md) to understand how it works
-3. Place your textbooks in `data/uploads/`
-4. Run `python -m app.main` to start the chat interface
+3. Place your PDFs (syllabus, exam overviews, textbooks) in `storage/uploads/`
+4. Run `adk web` or `adk run` to start the chat interface (entrypoint: `app.main`)
 
 ---
 
@@ -422,7 +422,7 @@ Once setup is complete:
 | `GOOGLE_API_KEY` | ✅ Yes | None | Your Google AI API key |
 | `EMBEDDING_MODEL` | No | `gemini-embedding-001` | Embedding model to use |
 | `CHAT_MODEL` | No | `gemini-2.0-flash` | Chat model for agents |
-| `VECTOR_STORE_PATH` | No | `data/indexes` | Where to store vector indexes |
+| `VECTOR_STORE_PATH` | No | `storage/state/index` | Where to store FAISS index and mapping |
 | `CHUNK_SIZE` | No | `512` | Tokens per chunk |
 | `CHUNK_OVERLAP` | No | `128` | Overlap between chunks |
 | `DEFAULT_HOURS_PER_DAY` | No | `3.0` | Default study hours per day |
@@ -483,8 +483,8 @@ deactivate
 # Remove virtual environment
 rm -rf .venv
 
-# Remove data artifacts (optional)
-rm -rf data/topics data/chunks data/indexes data/plans
+# Remove state artifacts (optional)
+rm -rf storage/state/extracted_text storage/state/chunks storage/state/index storage/state/plans
 
 # Remove environment file (optional)
 rm .env
@@ -497,10 +497,10 @@ rm .env
 If you encounter issues not covered here:
 
 1. Check the [Architecture documentation](ARCHITECTURE.md) for design details
-2. Review the [Usage guide](USAGE.md) for workflow examples
-3. Inspect logs in `data/logs/` (if logging is enabled)
+2. Review [Agent Quickstart](AGENT_QUICKSTART.md) for workflow examples
+3. Inspect logs in `storage/logs/` (if logging is enabled)
 4. Check the Google ADK documentation: https://developers.google.com/adk
 
 ---
 
-**Next**: [Usage Guide →](USAGE.md)
+**Next**: [Agent Quickstart →](AGENT_QUICKSTART.md)

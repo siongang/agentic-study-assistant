@@ -46,12 +46,17 @@ Vectors (for retrieval only)
 All intermediate representations are persisted:
 
 ```
-data/
-├── uploads/          # Source PDFs (user-provided)
-├── topics/           # Extracted topic inventories
-├── chunks/           # Text chunks with metadata
-├── indexes/          # Vector embeddings
-└── plans/            # Generated study schedules
+storage/
+├── uploads/              # Source PDFs (user-provided)
+└── state/
+    ├── manifest.json    # File inventory, status, doc_type
+    ├── extracted_text/  # Per-file text cache
+    ├── textbook_metadata/  # TOC / chapter boundaries
+    ├── chunks/          # chunks.jsonl
+    ├── index/           # FAISS index + row mapping
+    ├── coverage/        # Per-exam coverage
+    ├── enriched_coverage/  # Coverage + RAG evidence
+    └── plans/           # Generated study plans
 ```
 
 This enables:
@@ -168,10 +173,10 @@ class MaterialRegistry:
 @dataclass
 class Material:
     course: str          # "Physics", "Biology"
-    file_path: Path      # data/uploads/physics.pdf
+    file_path: Path      # storage/uploads/physics.pdf
     file_hash: str       # SHA256
     ingested: bool       # Has been processed
-    topic_file: Path     # data/topics/physics.json
+    derived: list[str]   # state/extracted_text/..., state/textbook_metadata/..., etc.
     last_updated: datetime
 ```
 
@@ -181,8 +186,8 @@ class Material:
 def check_materials(self) -> list[Action]:
     actions = []
     
-    # Scan data/uploads/
-    current_files = list(Path("data/uploads").glob("*.pdf"))
+    # Scan storage/uploads/
+    current_files = list(Path("storage/uploads").glob("*.pdf"))
     
     for file in current_files:
         hash = sha256(file.read_bytes())
@@ -232,9 +237,10 @@ Vectors: [...] → ChromaDB
 
 **Output artifacts:**
 
-- `data/topics/physics.json` — topic inventory
-- `data/chunks/physics.json` — chunks with metadata
-- `data/indexes/physics/` — vector store
+- `storage/state/extracted_text/<file_id>.json` — extracted text
+- `storage/state/textbook_metadata/<file_id>.json` — TOC (textbooks)
+- `storage/state/chunks/chunks.jsonl` — chunks with metadata
+- `storage/state/index/` — FAISS index and row mapping
 
 **Why this order?**
 
@@ -412,27 +418,27 @@ Response: "Acceleration is the rate of change of velocity (Physics, pp. 12-13).
 ### Full System Flow
 
 ```
-1. User places PDFs in data/uploads/
+1. User places PDFs in storage/uploads/
 
 2. User: "I added physics and biology textbooks. Plan for Feb 21 and Feb 25."
 
 3. RootAgent:
-   - Scans data/uploads/
-   - Detects new files
-   - Routes to IngestionAgent
+   - Scans storage/uploads/ (via manifest)
+   - Detects new/stale files
+   - Routes to Ingest Agent
 
-4. IngestionAgent:
-   - Parses PDFs → topics → chunks → embeddings
-   - Saves artifacts to data/topics/, data/chunks/, data/indexes/
+4. Ingest Agent:
+   - Extracts text, classifies, chunks textbooks, builds index
+   - Saves artifacts to storage/state/ (extracted_text, textbook_metadata, chunks, index)
 
 5. RootAgent:
    - Detects intent: "make a plan"
-   - Routes to PlannerAgent
+   - Routes to Planner Agent
 
-6. PlannerAgent:
-   - Loads data/topics/*.json
+6. Planner Agent:
+   - Loads coverage and enriched_coverage from storage/state/
    - Generates schedule
-   - Saves to data/plans/study_plan.md
+   - Saves to storage/state/plans/
 
 7. VerifierAgent:
    - Checks coverage (100%?)
@@ -444,9 +450,9 @@ Response: "Acceleration is the rate of change of velocity (Physics, pp. 12-13).
 
 9. User: "Explain kinematics"
 
-10. TutorAgent:
+10. Tutor Agent:
     - Embeds query
-    - Retrieves chunks from data/indexes/physics/
+    - Retrieves chunks from storage/state/index/ (FAISS)
     - Generates explanation
     - Cites pages
 ```
@@ -457,24 +463,20 @@ Response: "Acceleration is the rate of change of velocity (Physics, pp. 12-13).
 
 ### Material Registry (persistent)
 
-Stored in `data/materials.json`:
+Manifest stored in `storage/state/manifest.json` (file inventory). Material registry may be derived from it:
 
 ```json
 {
-  "physics": {
-    "file_path": "data/uploads/physics.pdf",
-    "file_hash": "a3f2b9...",
-    "ingested": true,
-    "topic_file": "data/topics/physics.json",
-    "last_updated": "2026-02-05T10:23:11Z"
-  },
-  "biology": {
-    "file_path": "data/uploads/biology.pdf",
-    "file_hash": "d8c4e1...",
-    "ingested": true,
-    "topic_file": "data/topics/biology.json",
-    "last_updated": "2026-02-04T15:42:33Z"
-  }
+  "files": [
+    {
+      "file_id": "...",
+      "path": "uploads/physics.pdf",
+      "sha256": "a3f2b9...",
+      "doc_type": "textbook",
+      "status": "processed",
+      "derived": ["state/extracted_text/...", "state/textbook_metadata/..."]
+    }
+  ]
 }
 ```
 
@@ -615,7 +617,7 @@ When a PDF is added/replaced/removed, the system must:
 1. **Detect the change**
    ```python
    old_hash = registry["physics"].file_hash
-   new_hash = sha256(Path("data/uploads/physics.pdf").read_bytes())
+   new_hash = sha256(Path("storage/uploads/physics.pdf").read_bytes())
    
    if old_hash != new_hash:
        # Textbook replaced
@@ -623,11 +625,11 @@ When a PDF is added/replaced/removed, the system must:
 
 2. **Invalidate downstream artifacts**
    ```python
-   def invalidate_material(course: str):
-       # Remove old artifacts
-       Path(f"data/topics/{course}.json").unlink()
-       Path(f"data/chunks/{course}.json").unlink()
-       shutil.rmtree(f"data/indexes/{course}/")
+   def invalidate_material(file_id: str):
+       # Remove old artifacts for this file
+       # (extracted_text, textbook_metadata, and chunks/index updated by pipeline)
+       Path(f"storage/state/extracted_text/{file_id}.json").unlink(missing_ok=True)
+       # Chunks/index are global; pipeline re-chunks and rebuilds when needed
        
        # Mark plan as stale
        state.plan_valid = False
@@ -781,14 +783,14 @@ def test_planning_workflow():
 ```python
 def test_full_workflow():
     # Place test PDF
-    shutil.copy("fixtures/physics.pdf", "data/uploads/")
+    shutil.copy("fixtures/physics.pdf", "storage/uploads/")
     
     # Simulate user
     root_agent.handle_message("I added a physics textbook. Exam is Feb 21.")
     
     # Verify artifacts created
-    assert Path("data/topics/physics.json").exists()
-    assert Path("data/plans/study_plan.md").exists()
+    assert list(Path("storage/state/extracted_text").glob("*.json")) or Path("storage/state/chunks/chunks.jsonl").exists()
+    assert list(Path("storage/state/plans").glob("*.md"))
 ```
 
 ---
